@@ -6,6 +6,7 @@ import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import { useAuth } from "../../context/AuthContext";
 import { ROUTES } from "../../constants/routes";
+import { axiosPost } from "../../api/axios.js"
 
 const RIDING_STYLES = ["로드", "MTB", "그래벨", "투어링", "도심 라이딩"];
 const CHECKLIST = [
@@ -59,8 +60,11 @@ export default function Signup() {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      await signup(form);
-      navigate(ROUTES.DASHBOARD);
+      console.log("form::", form);
+
+      const isSignup = await axiosPost("/member/signup", form)
+      //await signup(form);
+      if (isSignup) navigate(ROUTES.LOGIN);
     } finally {
       setIsSubmitting(false);
     }
@@ -149,11 +153,10 @@ export default function Signup() {
                     key={style}
                     type="button"
                     onClick={() => toggleStyle(style)}
-                    className={`rounded-lg border px-4 py-2 text-sm font-semibold ${
-                      form.ridingStyles.includes(style)
-                        ? "border-neon bg-neon/10 text-neon"
-                        : "border-border text-gray-400 hover:border-white/30"
-                    }`}
+                    className={`rounded-lg border px-4 py-2 text-sm font-semibold ${form.ridingStyles.includes(style)
+                      ? "border-neon bg-neon/10 text-neon"
+                      : "border-border text-gray-400 hover:border-white/30"
+                      }`}
                   >
                     {style}
                   </button>

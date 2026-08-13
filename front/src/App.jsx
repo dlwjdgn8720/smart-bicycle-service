@@ -7,6 +7,7 @@ import PublicLayout from "./layouts/PublicLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 import BikeLayout from "./layouts/BikeLayout";
+import ProtectedRoute from "./components/layout/ProtectedRoute";
 
 import Home from "./pages/Home";
 import Login from "./pages/auth/Login";
@@ -36,18 +37,20 @@ export default function App() {
               <Route path={ROUTES.SIGNUP} element={<Signup />} />
             </Route>
 
-            <Route path={ROUTES.RIDING_START} element={<RidingStart />} />
-            <Route path={ROUTES.PERSONAL_ROUTES} element={<PersonalBikeHome />} />
-            <Route path={ROUTES.ROUTE_DETAIL} element={<RouteDetail />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path={ROUTES.RIDING_START} element={<RidingStart />} />
+              <Route path={ROUTES.PERSONAL_ROUTES} element={<PersonalBikeHome />} />
+              <Route path={ROUTES.ROUTE_DETAIL} element={<RouteDetail />} />
 
-            <Route element={<BikeLayout />}>
-              <Route path={ROUTES.BIKE_SEOUL} element={<PublicBikeHome />} />
-              <Route path={ROUTES.BIKE_STATIONS} element={<StationStatus />} />
-              <Route path={ROUTES.BIKE_ANALYSIS} element={<AIAnalysis />} />
-            </Route>
+              <Route element={<BikeLayout />}>
+                <Route path={ROUTES.BIKE_SEOUL} element={<PublicBikeHome />} />
+                <Route path={ROUTES.BIKE_STATIONS} element={<StationStatus />} />
+                <Route path={ROUTES.BIKE_ANALYSIS} element={<AIAnalysis />} />
+              </Route>
 
-            <Route element={<DashboardLayout />}>
-              <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+              <Route element={<DashboardLayout />}>
+                <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+              </Route>
             </Route>
           </Routes>
           <Chatbot />

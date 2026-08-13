@@ -24,6 +24,8 @@ export default function Dashboard() {
 
   if (!data) return <Loading />;
 
+  console.log("dashbord User:::", user?.nickname);
+
   const displayName = user?.nickname || data.user.name;
 
   const activityStats = [
@@ -96,9 +98,8 @@ export default function Dashboard() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`border-b-2 px-4 py-2.5 text-sm font-semibold ${
-                  activeTab === tab ? "border-neon text-white" : "border-transparent text-gray-500 hover:text-gray-300"
-                }`}
+                className={`border-b-2 px-4 py-2.5 text-sm font-semibold ${activeTab === tab ? "border-neon text-white" : "border-transparent text-gray-500 hover:text-gray-300"
+                  }`}
               >
                 {tab}
               </button>

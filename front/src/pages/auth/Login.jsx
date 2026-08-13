@@ -7,6 +7,7 @@ import Button from "../../components/common/Button";
 import { useAuth } from "../../context/AuthContext";
 import { ROUTES } from "../../constants/routes";
 import { HOME_STATS } from "../../constants/mockData";
+import { axiosPost } from "../../api/axios.js";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -33,8 +34,21 @@ export default function Login() {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      await login(form);
-      navigate(ROUTES.DASHBOARD);
+      const result = await login(form);
+
+      console.log("result:::", result)
+      if (result.isLogin) navigate(ROUTES.DASHBOARD);
+      //applySession(result.accessToken, result.role)
+
+    } catch (error) {
+      if (error.response) {
+        // 서버가 응답을 반환한 경우 (400, 401, 500 등)
+        if (error.response.status === 401) {
+          alert(error.response.data.detail || "이메일 또는 비밀번호가 틀렸습니다.");
+        } else {
+          alert("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+        }
+      }
     } finally {
       setIsSubmitting(false);
     }

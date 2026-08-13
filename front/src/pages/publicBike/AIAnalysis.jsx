@@ -4,30 +4,42 @@ import BarChartCard from "../../components/charts/BarChartCard";
 import InsightCard from "../../components/cards/InsightCard";
 import Loading from "../../components/common/Loading";
 import publicBikeService from "../../services/publicBikeService";
+import { axiosGet } from "../../api/axios.js"
 
 export default function AIAnalysis() {
   const [data, setData] = useState(null);
+  const [predictData, setPredictData] = useState([]);
+
+  // useEffect(() => {
+  //   publicBikeService.getAnalysis().then(setData);
+  // }, []);
 
   useEffect(() => {
-    publicBikeService.getAnalysis().then(setData);
+    const fetchPredictData = async () => {
+      const pData = await axiosGet("/bike-trends")
+      console.log("pData : ", pData.data);
+
+      setPredictData(pData.data)
+    }
+    fetchPredictData()
   }, []);
 
-  if (!data) return <Loading />;
+  if (!predictData) return <Loading />;
 
   return (
     <div>
       <p className="mb-1 text-sm font-semibold text-bike">연간 트렌드</p>
-      <h2 className="mb-6 text-2xl font-extrabold text-white">2024년 월별 이용 추이</h2>
+      <h2 className="mb-6 text-2xl font-extrabold text-white">2025년 월별 이용 예측</h2>
       <AreaChartCard
-        data={data.monthlyUsage}
+        data={predictData}
         xKey="month"
-        yKey="count"
+        yKey="usage"
         color="#38BDF8"
         yTickFormatter={(v) => `${Math.round(v / 10000)}만`}
         height={300}
       />
 
-      <div className="mt-10 grid grid-cols-1 gap-5 lg:grid-cols-2">
+      {/* <div className="mt-10 grid grid-cols-1 gap-5 lg:grid-cols-2">
         <div>
           <p className="mb-1 text-sm font-semibold text-bike">대여소 순위</p>
           <h2 className="mb-4 text-2xl font-extrabold text-white">인기 대여소 TOP 6</h2>
@@ -48,7 +60,7 @@ export default function AIAnalysis() {
             <InsightCard key={insight.title} {...insight} />
           ))}
         </div>
-      </div>
+      </div> */}
 
       <p className="mt-8 text-center text-xs text-gray-600">
         본 분석은 서울 열린데이터 광장 공공자전거 이용 정보(2024년)를 기반으로 교육·시연 목적으로 재구성한 데이터입니다.

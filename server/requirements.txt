@@ -13,3 +13,5 @@ pandas
 scikit-learn
 joblib
 polars
+pyarrow
+pyjwt

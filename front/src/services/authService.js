@@ -1,4 +1,5 @@
 import api from "../api/axios";
+import { axiosPost } from "../api/axios.js";
 
 const MOCK_USER = {
   id: "mock-user-1",
@@ -8,12 +9,19 @@ const MOCK_USER = {
 };
 
 // 향후 FastAPI: POST /api/auth/login
-async function login({ email, password }) {
+async function login(form) {
   try {
-    const { data } = await api.post("/auth/login", { email, password });
-    return data;
+    console.log("form:::", form);
+    const data = await axiosPost("/member/login", form);
+    return {
+      accessToken: data.accessToken,
+      isLogin: data.isLogin,
+      user: {
+        nickname: data.nickname,
+      },
+    };
   } catch {
-    return { accessToken: "mock-access-token", user: MOCK_USER };
+    //return { accessToken: "mock-access-token", user: MOCK_USER };
   }
 }
 
@@ -23,7 +31,10 @@ async function signup(payload) {
     const { data } = await api.post("/auth/signup", payload);
     return data;
   } catch {
-    return { accessToken: "mock-access-token", user: { ...MOCK_USER, nickname: payload.nickname || MOCK_USER.nickname } };
+    return {
+      accessToken: "mock-access-token",
+      user: { ...MOCK_USER, nickname: payload.nickname || MOCK_USER.nickname },
+    };
   }
 }
 

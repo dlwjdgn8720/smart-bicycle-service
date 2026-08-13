@@ -18,6 +18,7 @@ export default function AreaChartCard({
   title,
   subtitle,
 }) {
+
   return (
     <div className="rounded-xl border border-border bg-card p-6">
       {title && <p className="mb-1 text-sm font-semibold text-white">{title}</p>}
@@ -31,7 +32,7 @@ export default function AreaChartCard({
             </linearGradient>
           </defs>
           <CartesianGrid vertical={false} stroke="#242424" />
-          <XAxis dataKey={xKey} stroke="#6b7280" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+          <XAxis dataKey={xKey} stroke="#6b7280" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
           <YAxis
             stroke="#6b7280"
             tick={{ fontSize: 11 }}
