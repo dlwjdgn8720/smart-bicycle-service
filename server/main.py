@@ -40,15 +40,15 @@ def get_bike_trends():
     result = []
     
     # 1. 2024년 실제 데이터 포맷팅
-    for item in raw_2024:
-        result.append({
-            "month": f"24년 {int(item['month'])}월",
-            "usage": int(item['이용건수']),
-            "isPredicted": False
-        })
+    # for item in raw_2024:
+    #     result.append({
+    #         "month": f"24년 {int(item['month'])}월",
+    #         "usage": int(item['이용건수']),
+    #         "isPredicted": False
+    #     })
         
-    # 2. 2025년 1월 ~ 6월 AI 미래 예측 데이터 생성
-    future_months = list(range(1, 7)) # 2025년 1~6월
+    # 2. 2025년 1월 ~ 12월 AI 미래 예측 데이터 생성
+    future_months = list(range(1, 13)) # 2025년 1~12월
     
     future_X = []
     for m in future_months:
@@ -71,3 +71,13 @@ def get_bike_trends():
         })
         
     return {"data": result}
+
+# 스타트업 시 Top 10 예측 데이터 로드
+top_stations_data = joblib.load('models/top_stations_2025.pkl')
+
+@app.get("/api/top-stations")
+def get_top_stations():
+    """
+    2025년 인기대여소 Top 10 예측 데이터 반환 API
+    """
+    return {"data": top_stations_data}

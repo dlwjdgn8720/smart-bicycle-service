@@ -1,12 +1,27 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Star, Map, TrendingUp, Clock, Zap, Navigation as NavIcon, Award, Shield, Battery, Users, ChevronLeft, Bookmark } from "lucide-react";
+import {
+  Star,
+  Map,
+  TrendingUp,
+  Clock,
+  Zap,
+  Navigation as NavIcon,
+  Award,
+  Shield,
+  Battery,
+  Users,
+  ChevronLeft,
+  Bookmark,
+  LayoutDashboard,
+} from "lucide-react";
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
 import Logo from "../../components/common/Logo";
 import AreaChartCard from "../../components/charts/AreaChartCard";
 import Loading from "../../components/common/Loading";
 import routeService from "../../services/routeService";
+import { useAuth } from "../../context/AuthContext"; // 💡 AuthContext 연결
 import { ROUTES_MOCK } from "../../constants/mockData";
 import { ROUTES } from "../../constants/routes";
 
@@ -15,6 +30,7 @@ const SAFETY_ICONS = [Shield, Battery, Zap, Users];
 export default function RouteDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth(); // 💡 로그인 상태 및 유저 정보
   const [route, setRoute] = useState(null);
 
   useEffect(() => {
@@ -25,6 +41,8 @@ export default function RouteDetail() {
   if (!route) return <Loading />;
 
   const otherRoutes = ROUTES_MOCK.filter((r) => r.id !== route.id).slice(0, 2);
+
+  const displayName = user?.nickname || user?.name || user?.email?.split("@")[0] || "라이더";
 
   const infoItems = [
     { icon: Map, label: "총 거리", value: route.distance },
@@ -37,19 +55,42 @@ export default function RouteDetail() {
 
   return (
     <div className="min-h-screen bg-bg text-white">
+      {/* 히어로 영역 */}
       <div className="relative h-[420px] w-full overflow-hidden">
         <img src={route.image} alt={route.name} className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-black/20" />
 
+        {/* 상단 네비게이션 헤더 */}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between px-6 py-5">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-200 hover:text-white">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1 text-sm text-gray-200 hover:text-white"
+          >
             <ChevronLeft className="h-4 w-4" />
             루트 목록
           </button>
+
           <Logo />
-          <Button as={Link} to={ROUTES.SIGNUP} size="sm">
-            무료 가입
-          </Button>
+
+          {/* 💡 로그인 여부에 따라 우측 버튼 분기 */}
+          {isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              <Link
+                to={ROUTES.DASHBOARD}
+                className="flex items-center gap-1 text-sm text-gray-200 transition-colors hover:text-white"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span className="hidden sm:inline">대시보드</span>
+              </Link>
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-neon text-xs font-bold text-black">
+                {displayName.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          ) : (
+            <Button as={Link} to={ROUTES.SIGNUP} size="sm">
+              무료 가입
+            </Button>
+          )}
         </div>
 
         <div className="absolute bottom-8 left-6">
@@ -62,6 +103,7 @@ export default function RouteDetail() {
         </div>
       </div>
 
+      {/* 본문 영역 */}
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 lg:grid-cols-[1fr_320px]">
         <div>
           {route.rating && (
@@ -72,7 +114,11 @@ export default function RouteDetail() {
                 ))}
               </div>
               <span className="font-bold text-white">{route.rating}</span>
-              {route.reviewCount && <span className="text-sm text-gray-500">({route.reviewCount.toLocaleString()}개 리뷰)</span>}
+              {route.reviewCount && (
+                <span className="text-sm text-gray-500">
+                  ({route.reviewCount.toLocaleString()}개 리뷰)
+                </span>
+              )}
             </div>
           )}
 
@@ -94,7 +140,13 @@ export default function RouteDetail() {
             <>
               <h2 className="mb-4 text-xl font-bold text-white">고도 프로파일</h2>
               <div className="mb-10">
-                <AreaChartCard data={route.elevationProfile} xKey="km" yKey="elevation" color="#C6FF00" height={220} />
+                <AreaChartCard
+                  data={route.elevationProfile}
+                  xKey="km"
+                  yKey="elevation"
+                  color="#C6FF00"
+                  height={220}
+                />
               </div>
             </>
           )}
@@ -106,7 +158,10 @@ export default function RouteDetail() {
                 {route.safetyTips.map((tip, idx) => {
                   const Icon = SAFETY_ICONS[idx % SAFETY_ICONS.length];
                   return (
-                    <div key={tip} className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm text-gray-300">
+                    <div
+                      key={tip}
+                      className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm text-gray-300"
+                    >
                       <Icon className="h-4 w-4 shrink-0 text-neon" />
                       {tip}
                     </div>
@@ -130,15 +185,21 @@ export default function RouteDetail() {
           <div className="space-y-3 rounded-xl border border-border bg-card p-5 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-gray-500">참여한 라이더</span>
-              <span className="font-semibold text-white">{(route.participants || 1200).toLocaleString()}명</span>
+              <span className="font-semibold text-white">
+                {(route.participants || 1200).toLocaleString()}명
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-gray-500">평균 완주율</span>
-              <span className="font-semibold text-white">{route.completionRate || 92}%</span>
+              <span className="font-semibold text-white">
+                {route.completionRate || 92}%
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-gray-500">추천 시즌</span>
-              <span className="font-semibold text-white">{route.season || "사계절"}</span>
+              <span className="font-semibold text-white">
+                {route.season || "사계절"}
+              </span>
             </div>
           </div>
 
@@ -149,8 +210,16 @@ export default function RouteDetail() {
             </p>
             <div className="space-y-3">
               {otherRoutes.map((r) => (
-                <Link key={r.id} to={ROUTES.routeDetail(r.id)} className="flex items-center gap-3 hover:opacity-80">
-                  <img src={r.image} alt={r.name} className="h-12 w-12 rounded-lg object-cover" />
+                <Link
+                  key={r.id}
+                  to={ROUTES.routeDetail(r.id)}
+                  className="flex items-center gap-3 hover:opacity-80"
+                >
+                  <img
+                    src={r.image}
+                    alt={r.name}
+                    className="h-12 w-12 rounded-lg object-cover"
+                  />
                   <div className="text-sm">
                     <p className="font-semibold text-white">{r.name}</p>
                     <p className="text-xs text-gray-500">

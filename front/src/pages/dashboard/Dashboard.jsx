@@ -24,8 +24,6 @@ export default function Dashboard() {
 
   if (!data) return <Loading />;
 
-  console.log("dashbord User:::", user?.nickname);
-
   const displayName = user?.nickname || data.user.name;
 
   const activityStats = [

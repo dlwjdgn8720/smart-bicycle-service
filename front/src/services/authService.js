@@ -18,9 +18,11 @@ async function login(form) {
       isLogin: data.isLogin,
       user: {
         nickname: data.nickname,
+        email: data.email,
       },
     };
-  } catch {
+  } catch (error) {
+    throw error;
     //return { accessToken: "mock-access-token", user: MOCK_USER };
   }
 }
@@ -47,7 +49,9 @@ async function loginWithKakao() {
   return login({ email: "kakao-user@example.com", password: "oauth" });
 }
 
-function logout() {
+async function logout() {
+  const data = await axiosPost("/member/logout", "");
+  console.log("data", data);
   localStorage.removeItem("pedalup_access_token");
 }
 

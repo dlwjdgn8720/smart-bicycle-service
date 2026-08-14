@@ -12,13 +12,13 @@ const NAV_ITEMS = [
 ];
 
 export default function DashboardHeader() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = () => {
     logout();
-    navigate(ROUTES.HOME);
+    navigate(ROUTES.HOME, { replace: true });
   };
 
   console.log("user:::", user);

@@ -7,7 +7,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // 💡 로딩 상태 추가 (초기화 방지용)
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가 (초기화 방지용)
 
   const applySession = useCallback(({ accessToken, user: nextUser }) => {
 
@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(true);
   }, []);
 
-  // 🛠️ [새로고침 대응] 앱 구동 시 토큰으로 유저 정보 복구하는 로직
+  // [새로고침 대응] 앱 구동 시 토큰으로 유저 정보 복구하는 로직
   useEffect(() => {
     const restoreSession = async () => {
       const token = localStorage.getItem("pedalup_access_token");
@@ -49,9 +49,13 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(
     async (credentials) => {
-      const session = await authService.login(credentials);
-      applySession(session);
-      return session;
+      try {
+        const session = await authService.login(credentials);
+        applySession(session);
+        return session
+      } catch (error) {
+        throw error
+      }
     },
     [applySession]
   );
@@ -77,8 +81,8 @@ export function AuthProvider({ children }) {
     return session;
   }, [applySession]);
 
-  const logout = useCallback(() => {
-    authService.logout();
+  const logout = useCallback(async () => {
+    await authService.logout();
     setUser(null);
     setIsAuthenticated(false);
   }, []);

@@ -13,22 +13,22 @@ export default function BarChartCard({
   data,
   xKey,
   yKey,
-  color = "#38BDF8",
+  color,
   highlightColor,
-  layout = "vertical",
-  height = 260,
-  title,
+  layout,
+  height,
+  //title,
 }) {
   const isHorizontal = layout === "horizontal";
 
   return (
     <div className="rounded-xl border border-border bg-card p-6">
-      {title && <p className="mb-4 text-sm font-semibold text-white">{title}</p>}
+      {/* {title && <p className="mb-4 text-sm font-semibold text-white">{title}</p>} */}
       <ResponsiveContainer width="100%" height={height}>
         <BarChart
           data={data}
           layout={isHorizontal ? "vertical" : "horizontal"}
-          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+          margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
         >
           <CartesianGrid stroke="#242424" horizontal={!isHorizontal} vertical={isHorizontal} />
           {isHorizontal ? (
@@ -41,7 +41,7 @@ export default function BarChartCard({
                 tick={{ fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
-                width={140}
+                width={160}
               />
             </>
           ) : (

@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext"
+import { ROUTES } from "../../constants/routes"
 
 export default function ProtectedRoute() {
     const { isAuthenticated, isLoading } = useAuth();
@@ -15,7 +16,7 @@ export default function ProtectedRoute() {
 
     // 2. 조회가 끝났는데 로그인이 안 되어 있다면 로그인 페이지로 강제 이동시킵니다.
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to={ROUTES.LOGIN} replace />;
     }
 
     // 3. 로그인된 사용자라면 가려던 페이지를 정상적으로 보여줍니다.

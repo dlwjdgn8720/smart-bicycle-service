@@ -17,10 +17,10 @@ REFRESH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 # 7일
 SECRET_KEY = os.getenv("ACCESS_SECRET", "dev-access-secret") 
 ALGORITHM = "HS256"
 
-# 💡 프론트엔드가 헤더에 실어 보낸 'Bearer <토큰>'을 추출하는 객체
+# 프론트엔드가 헤더에 실어 보낸 'Bearer <토큰>'을 추출하는 객체
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/member/login")
 
-# 🛠️ [추가] 토큰을 검증하고 현재 유저 객체를 찾아주는 의존성 함수
+# [추가] 토큰을 검증하고 현재 유저 객체를 찾아주는 의존성 함수
 async def get_current_user(
     token: str = Depends(oauth2_scheme), 
     db: Session = Depends(get_db)
@@ -35,10 +35,8 @@ async def get_current_user(
     try:
         # 1. 프론트엔드가 보낸 엑세스 토큰 해독
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
-        print("payload::", payload)
-        
-        # 💡 login 함수에서 create_access_token(memberModel.email, ...) 형태로 
+ 
+        # login 함수에서 create_access_token(memberModel.email, ...) 형태로 
         # 첫 번째 인자에 넣었던 값(이메일)이 payload의 'sub'에 담깁니다.
         email: str = payload.get("sub")
         
@@ -72,15 +70,12 @@ async def login(loginItem: LoginItem,
             detail="이메일 또는 비밀번호가 일치하지 않습니다."
         )
 
-    #2. 0 => core.security 파일의 verify함수 실행, 비교
+    # core.security 파일의 verify함수 실행, 비교
     # result = verify_password(loginItem.password, memberModel.password)
     # if result:
 
     access_token = create_access_token(memberModel.email, memberModel.role)
     refresh_token = create_refresh_token(memberModel.email, memberModel.role)
-
-    print("refresh_token", refresh_token)
-
     response.set_cookie(
         key= REFRESH_COOKIE_NAME,
         value= refresh_token,
@@ -90,7 +85,7 @@ async def login(loginItem: LoginItem,
         max_age= REFRESH_COOKIE_MAX_AGE
     ) 
 
-    #3. X => 메시지 리턴
+    #3. 메시지 리턴
     return {
         "email": memberModel.email,
         "nickname": memberModel.nickname,
@@ -110,10 +105,11 @@ async def logout(response:Response) -> dict:
 
 @member_router.get("/me")
 async def get_me(current_user: MemberModel = Depends(get_current_user)) -> dict:
-    print("current_user", current_user)
+    print("nickname::", current_user.nickname)
     return {
        "user":{
-        "nickname": current_user.nickname    
+        "nickname": current_user.nickname,
+        "email": current_user.email
        }      
     }
     
