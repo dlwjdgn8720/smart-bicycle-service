@@ -11,7 +11,6 @@ const MOCK_USER = {
 // 향후 FastAPI: POST /api/auth/login
 async function login(form) {
   try {
-    console.log("form:::", form);
     const data = await axiosPost("/member/login", form);
     return {
       accessToken: data.accessToken,

@@ -9,19 +9,22 @@ export const FEATURES = [
     icon: "Map",
     tag: "AI 추천",
     title: "스마트 루트 탐색",
-    description: "AI가 실력, 선호 지형, 현재 날씨를 분석해 최적의 루트를 추천합니다.",
+    description:
+      "AI가 실력, 선호 지형, 현재 날씨를 분석해 최적의 루트를 추천합니다.",
   },
   {
     icon: "Users",
     tag: "소셜",
     title: "라이더 커뮤니티",
-    description: "지역 라이더들과 단체 라이딩을 기획하고, 실시간으로 소통하세요.",
+    description:
+      "지역 라이더들과 단체 라이딩을 기획하고, 실시간으로 소통하세요.",
   },
   {
     icon: "Activity",
     tag: "실시간",
     title: "라이딩 트래킹",
-    description: "GPS 기반 속도·거리·고도 데이터를 자동 기록하고 통계로 분석해보세요.",
+    description:
+      "GPS 기반 속도·거리·고도 데이터를 자동 기록하고 통계로 분석해보세요.",
   },
   {
     icon: "Trophy",
@@ -91,7 +94,8 @@ export const ROUTES_MOCK = [
     destination: { name: "합정역 6번출구", available: 2, total: 20 },
     availableBike: 14,
     returnSpace: 2,
-    description: "한강변 자전거도로를 따라 달리는 서울 대표 따릉이 코스. 평탄한 지형으로 누구나 편하게 즐길 수 있습니다.",
+    description:
+      "한강변 자전거도로를 따라 달리는 서울 대표 따릉이 코스. 평탄한 지형으로 누구나 편하게 즐길 수 있습니다.",
   },
   {
     id: "ttukseom-jamsil",
@@ -312,30 +316,96 @@ export const BIKE_HERO_STATS = [
 ];
 
 export const STATIONS_MOCK = [
-  { id: 1, name: "여의나루역 1번출구", distance: "120m", available: 14, total: 20, status: "GOOD" },
-  { id: 2, name: "여의도공원 북측", distance: "340m", available: 3, total: 15, status: "LOW" },
-  { id: 3, name: "국회의사당역 앞", distance: "580m", available: 0, total: 18, status: "EMPTY" },
-  { id: 4, name: "마포대교 남단", distance: "820m", available: 8, total: 12, status: "GOOD" },
-  { id: 5, name: "합정역 6번출구", distance: "1.1km", available: 2, total: 20, status: "LOW" },
-  { id: 6, name: "당인리문화창작소", distance: "1.4km", available: 6, total: 10, status: "GOOD" },
+  {
+    id: 1,
+    name: "여의나루역 1번출구",
+    distance: "120m",
+    available: 14,
+    total: 20,
+    status: "GOOD",
+  },
+  {
+    id: 2,
+    name: "여의도공원 북측",
+    distance: "340m",
+    available: 3,
+    total: 15,
+    status: "LOW",
+  },
+  {
+    id: 3,
+    name: "국회의사당역 앞",
+    distance: "580m",
+    available: 0,
+    total: 18,
+    status: "EMPTY",
+  },
+  {
+    id: 4,
+    name: "마포대교 남단",
+    distance: "820m",
+    available: 8,
+    total: 12,
+    status: "GOOD",
+  },
+  {
+    id: 5,
+    name: "합정역 6번출구",
+    distance: "1.1km",
+    available: 2,
+    total: 20,
+    status: "LOW",
+  },
+  {
+    id: 6,
+    name: "당인리문화창작소",
+    distance: "1.4km",
+    available: 6,
+    total: 10,
+    status: "GOOD",
+  },
 ];
 
 export const HOURLY_USAGE = [
-  { hour: "0시", count: 1200 }, { hour: "1시", count: 800 }, { hour: "2시", count: 500 },
-  { hour: "3시", count: 400 }, { hour: "4시", count: 600 }, { hour: "5시", count: 1500 },
-  { hour: "6시", count: 4000 }, { hour: "7시", count: 12000 }, { hour: "8시", count: 24500 },
-  { hour: "9시", count: 16000 }, { hour: "10시", count: 10000 }, { hour: "11시", count: 9500 },
-  { hour: "12시", count: 13500 }, { hour: "13시", count: 10500 }, { hour: "14시", count: 9800 },
-  { hour: "15시", count: 10200 }, { hour: "16시", count: 12500 }, { hour: "17시", count: 21000 },
-  { hour: "18시", count: 29500 }, { hour: "19시", count: 24000 }, { hour: "20시", count: 16000 },
-  { hour: "21시", count: 11000 }, { hour: "22시", count: 7000 }, { hour: "23시", count: 3000 },
+  { hour: "0시", count: 1200 },
+  { hour: "1시", count: 800 },
+  { hour: "2시", count: 500 },
+  { hour: "3시", count: 400 },
+  { hour: "4시", count: 600 },
+  { hour: "5시", count: 1500 },
+  { hour: "6시", count: 4000 },
+  { hour: "7시", count: 12000 },
+  { hour: "8시", count: 24500 },
+  { hour: "9시", count: 16000 },
+  { hour: "10시", count: 10000 },
+  { hour: "11시", count: 9500 },
+  { hour: "12시", count: 13500 },
+  { hour: "13시", count: 10500 },
+  { hour: "14시", count: 9800 },
+  { hour: "15시", count: 10200 },
+  { hour: "16시", count: 12500 },
+  { hour: "17시", count: 21000 },
+  { hour: "18시", count: 29500 },
+  { hour: "19시", count: 24000 },
+  { hour: "20시", count: 16000 },
+  { hour: "21시", count: 11000 },
+  { hour: "22시", count: 7000 },
+  { hour: "23시", count: 3000 },
 ];
 
 export const MONTHLY_USAGE = [
-  { month: "1월", count: 1500000 }, { month: "2월", count: 1700000 }, { month: "3월", count: 2600000 },
-  { month: "4월", count: 3800000 }, { month: "5월", count: 4200000 }, { month: "6월", count: 3600000 },
-  { month: "7월", count: 3000000 }, { month: "8월", count: 2800000 }, { month: "9월", count: 3900000 },
-  { month: "10월", count: 4300000 }, { month: "11월", count: 3100000 }, { month: "12월", count: 1600000 },
+  { month: "1월", count: 1500000 },
+  { month: "2월", count: 1700000 },
+  { month: "3월", count: 2600000 },
+  { month: "4월", count: 3800000 },
+  { month: "5월", count: 4200000 },
+  { month: "6월", count: 3600000 },
+  { month: "7월", count: 3000000 },
+  { month: "8월", count: 2800000 },
+  { month: "9월", count: 3900000 },
+  { month: "10월", count: 4300000 },
+  { month: "11월", count: 3100000 },
+  { month: "12월", count: 1600000 },
 ];
 
 export const TOP_STATIONS = [
@@ -361,7 +431,8 @@ export const AI_INSIGHTS = [
     tag: "패턴",
     icon: "TrendingUp",
     title: "퇴근 시간 수요가 출근보다 23% 높음",
-    description: "17~19시 이용량이 7~9시 대비 평균 23.4% 높습니다. 귀가 시 자전거 이용 선호도가 뚜렷하게 증가하는 추세입니다.",
+    description:
+      "17~19시 이용량이 7~9시 대비 평균 23.4% 높습니다. 귀가 시 자전거 이용 선호도가 뚜렷하게 증가하는 추세입니다.",
     metricLabel: "퇴근 vs 출근",
     metricValue: "+23.4%",
     tone: "up",
@@ -370,7 +441,8 @@ export const AI_INSIGHTS = [
     tag: "날씨",
     icon: "CloudRain",
     title: "강수 시 이용률 67% 급감",
-    description: "비 오는 날 이용량이 맑은 날 대비 67% 감소합니다. 날씨 예보 연동 실시간 재고 분산 전략이 필요합니다.",
+    description:
+      "비 오는 날 이용량이 맑은 날 대비 67% 감소합니다. 날씨 예보 연동 실시간 재고 분산 전략이 필요합니다.",
     metricLabel: "비 vs 맑음",
     metricValue: "-67%",
     tone: "down",
@@ -379,7 +451,8 @@ export const AI_INSIGHTS = [
     tag: "이용자",
     icon: "Users",
     title: "20~30대가 전체 이용의 62% 점유",
-    description: "핵심 이용층은 20대(34.1%)와 30대(28.4%)입니다. 40~50대 유입 확대를 위한 생활형 루트 콘텐츠 강화가 효과적입니다.",
+    description:
+      "핵심 이용층은 20대(34.1%)와 30대(28.4%)입니다. 40~50대 유입 확대를 위한 생활형 루트 콘텐츠 강화가 효과적입니다.",
     metricLabel: "20~30대 비중",
     metricValue: "62%",
     tone: "neutral",
@@ -388,7 +461,8 @@ export const AI_INSIGHTS = [
     tag: "패턴",
     icon: "Zap",
     title: "평균 이동 거리 2.8km, 10분 미만 68%",
-    description: "전체 대여의 68%가 10분 미만 단거리 이용입니다. 지하철역 반경 500m 내 대여소 밀도 확충이 핵심 과제입니다.",
+    description:
+      "전체 대여의 68%가 10분 미만 단거리 이용입니다. 지하철역 반경 500m 내 대여소 밀도 확충이 핵심 과제입니다.",
     metricLabel: "평균 이동 거리",
     metricValue: "2.8km",
     tone: "neutral",
@@ -397,7 +471,8 @@ export const AI_INSIGHTS = [
     tag: "경로",
     icon: "MapPin",
     title: "여의나루-합정 구간 반복 이용률 1위",
-    description: "동일 구간 재이용률이 78%에 달하는 여의나루-합정 코스. 한강변 인기 코스 우선 정비 및 실시간 알림 강화를 권장합니다.",
+    description:
+      "동일 구간 재이용률이 78%에 달하는 여의나루-합정 코스. 한강변 인기 코스 우선 정비 및 실시간 알림 강화를 권장합니다.",
     metricLabel: "재이용률",
     metricValue: "78%",
     tone: "up",
@@ -406,7 +481,8 @@ export const AI_INSIGHTS = [
     tag: "예측",
     icon: "Sparkles",
     title: "봄 성수기 수요 조기 포화 예측",
-    description: "4~5월 한강변 대여소는 오후 4시부터 재고 소진율 92%에 도달. AI 모델은 2주 전부터 해당 구간 집중 보충을 권장합니다.",
+    description:
+      "4~5월 한강변 대여소는 오후 4시부터 재고 소진율 92%에 도달. AI 모델은 2주 전부터 해당 구간 집중 보충을 권장합니다.",
     metricLabel: "성수기 소진율",
     metricValue: "92%",
     tone: "up",
@@ -443,17 +519,86 @@ export const QUICK_MENU = [
 ];
 
 export const COMMUNITY_FEED = [
-  { name: "박서연", initial: "박", text: "님이 북한산 루트 완주 인증", time: "5분 전", likes: 24 },
-  { name: "이재혁", initial: "이", text: "님이 제주 환상길 D-7 모집 중", time: "22분 전", likes: 41 },
-  { name: "최지현", initial: "최", text: "님이 한강 종주 신기록 달성", time: "1시간 전", likes: 87 },
+  {
+    name: "박서연",
+    initial: "박",
+    text: "님이 북한산 루트 완주 인증",
+    time: "5분 전",
+    likes: 24,
+  },
+  {
+    name: "이재혁",
+    initial: "이",
+    text: "님이 제주 환상길 D-7 모집 중",
+    time: "22분 전",
+    likes: 41,
+  },
+  {
+    name: "최지현",
+    initial: "최",
+    text: "님이 한강 종주 신기록 달성",
+    time: "1시간 전",
+    likes: 87,
+  },
 ];
 
-export const CHATBOT_QUICK_QUESTIONS = ["루트 추천해줘", "따릉이 정보", "요금이 궁금해", "앱 다운로드"];
+export const CHATBOT_QUICK_QUESTIONS = [
+  "루트 추천해줘",
+  "따릉이 정보",
+  "요금이 궁금해",
+  "앱 다운로드",
+];
 
 export const CHATBOT_MOCK_ANSWERS = {
   기본: "안녕하세요! 페달업 AI 도우미입니다 🚴 루트 추천, 따릉이 정보, 라이딩 팁 등 무엇이든 물어보세요.",
   루트: "지금 시간대에는 '여의나루-합정 한강 코스'(8.2km, 난이도 입문)를 추천해요. AI 분석 결과 혼잡도가 낮고 평탄한 지형이라 편하게 즐기실 수 있어요.",
-  따릉이: "서울시 따릉이는 현재 2,692개 대여소에서 운영 중이며, 실시간 대여 가능 현황은 '따릉이 대여소 현황' 탭에서 확인하실 수 있어요.",
+  따릉이:
+    "서울시 따릉이는 현재 2,692개 대여소에서 운영 중이며, 실시간 대여 가능 현황은 '따릉이 대여소 현황' 탭에서 확인하실 수 있어요.",
   요금: "따릉이는 1시간 기준 1,000원이며, 4시간 이내 추가요금이 없어요. 반납 후 재대여도 가능합니다.",
   앱: "PEDALUP 앱은 iOS 14.0 이상, Android 8.0 이상에서 무료로 다운로드할 수 있어요. 가입 후 30일간 프리미엄 기능도 무료로 사용해보세요!",
 };
+
+export const FORECAST_STATIONS = [
+  {
+    id: 1,
+    name: "여의나루역 1번출구",
+    district: "영등포구 여의동",
+    rackCount: 20,
+    recentHourlyRentals: 28,
+  },
+  {
+    id: 2,
+    name: "합정역 6번출구",
+    district: "마포구 합정동",
+    rackCount: 20,
+    recentHourlyRentals: 24,
+  },
+  {
+    id: 3,
+    name: "홍대입구역 9번출구",
+    district: "마포구 서교동",
+    rackCount: 18,
+    recentHourlyRentals: 35,
+  },
+  {
+    id: 4,
+    name: "뚝섬유원지",
+    district: "광진구 자양동",
+    rackCount: 16,
+    recentHourlyRentals: 20,
+  },
+  {
+    id: 5,
+    name: "반포한강공원",
+    district: "서초구 반포동",
+    rackCount: 20,
+    recentHourlyRentals: 18,
+  },
+  {
+    id: 6,
+    name: "이태원역 4번출구",
+    district: "용산구 이태원동",
+    rackCount: 14,
+    recentHourlyRentals: 12,
+  },
+];

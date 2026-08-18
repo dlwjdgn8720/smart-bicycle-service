@@ -8,5 +8,7 @@ __pycache__/
 *.__pycache__
 *.pyc
 *.csv
+*.xlsx
+*.parquet
 *.pkl
 .ipynb_checkpoints/

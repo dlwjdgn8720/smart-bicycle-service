@@ -9,5 +9,6 @@ export const ROUTES = {
   BIKE_SEOUL: "/bike/seoul",
   BIKE_STATIONS: "/bike/seoul/stations",
   BIKE_ANALYSIS: "/bike/seoul/analysis",
+  BIKE_FORECAST: "/bike/seoul/forecast",
   DASHBOARD: "/dashboard",
 };

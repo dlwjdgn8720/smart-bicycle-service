@@ -36,7 +36,6 @@ export default function Login() {
     try {
       const result = await login(form);
 
-      console.log("result:::", result)
       if (result.isLogin) navigate(ROUTES.DASHBOARD);
       //applySession(result.accessToken, result.role)
 

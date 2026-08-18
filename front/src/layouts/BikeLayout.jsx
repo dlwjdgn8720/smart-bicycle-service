@@ -9,6 +9,7 @@ const TABS = [
   { label: "따릉이 루트", to: ROUTES.BIKE_SEOUL, end: true },
   { label: "대여소 현황", to: ROUTES.BIKE_STATIONS },
   { label: "AI 분석", to: ROUTES.BIKE_ANALYSIS },
+  { label: "AI 수요예측", to: ROUTES.BIKE_FORECAST },
 ];
 
 const STAT_ICONS = ["Bike", "MapPin", "Activity", "Clock"];
@@ -68,8 +69,7 @@ export default function BikeLayout() {
               to={tab.to}
               end={tab.end}
               className={({ isActive }) =>
-                `border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                  isActive ? "border-bike text-bike" : "border-transparent text-gray-500 hover:text-gray-300"
+                `border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${isActive ? "border-bike text-bike" : "border-transparent text-gray-500 hover:text-gray-300"
                 }`
               }
             >

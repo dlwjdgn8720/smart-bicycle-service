@@ -18,6 +18,7 @@ import RouteDetail from "./pages/riding/RouteDetail";
 import PublicBikeHome from "./pages/publicBike/PublicBikeHome";
 import StationStatus from "./pages/publicBike/StationStatus";
 import AIAnalysis from "./pages/publicBike/AIAnalysis";
+import DemandForecast from "./pages/publicBike/DemandForecast";
 import Dashboard from "./pages/dashboard/Dashboard";
 
 import { ROUTES } from "./constants/routes";
@@ -46,6 +47,7 @@ export default function App() {
               <Route path={ROUTES.BIKE_SEOUL} element={<PublicBikeHome />} />
               <Route path={ROUTES.BIKE_STATIONS} element={<StationStatus />} />
               <Route path={ROUTES.BIKE_ANALYSIS} element={<AIAnalysis />} />
+              <Route path={ROUTES.BIKE_FORECAST} element={<DemandForecast />} />
             </Route>
 
             <Route element={<DashboardLayout />}>
