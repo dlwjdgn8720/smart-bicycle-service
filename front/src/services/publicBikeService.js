@@ -69,8 +69,8 @@ async function getForecast({
   humidity,
   rainfall,
   windSpeed,
-  recentHourlyRentals,
-  prevDaySameHourRentals,
+  // recentHourlyRentals,
+  // prevDaySameHourRentals,
   rolling7dSameHourAvg,
 }) {
   try {
@@ -83,8 +83,8 @@ async function getForecast({
       humidity,
       rainfall,
       wind_speed: windSpeed,
-      recent_1h_rental_count: recentHourlyRentals,
-      prev_day_same_hour_rental_count: prevDaySameHourRentals,
+      // recent_1h_rental_count: recentHourlyRentals,
+      // prev_day_same_hour_rental_count: prevDaySameHourRentals,
       rolling_7d_same_hour_avg: rolling7dSameHourAvg,
     });
     return data;
@@ -95,8 +95,8 @@ async function getForecast({
       temperature,
       rainfall,
       windSpeed,
-      recentHourlyRentals,
-      prevDaySameHourRentals,
+      // recentHourlyRentals,
+      // prevDaySameHourRentals,
       rolling7dSameHourAvg,
     });
   }
@@ -109,8 +109,8 @@ function mockForecast({
   temperature,
   rainfall,
   windSpeed,
-  recentHourlyRentals,
-  prevDaySameHourRentals,
+  // recentHourlyRentals,
+  // prevDaySameHourRentals,
   rolling7dSameHourAvg,
 }) {
   const station =

@@ -560,45 +560,12 @@ export const CHATBOT_MOCK_ANSWERS = {
 
 export const FORECAST_STATIONS = [
   {
-    id: 1,
-    name: "여의나루역 1번출구",
-    district: "영등포구 여의동",
+    id: 102,
+    name: "망원역 1번출구 앞",
+    district: "마포구",
     rackCount: 20,
     recentHourlyRentals: 28,
-  },
-  {
-    id: 2,
-    name: "합정역 6번출구",
-    district: "마포구 합정동",
-    rackCount: 20,
-    recentHourlyRentals: 24,
-  },
-  {
-    id: 3,
-    name: "홍대입구역 9번출구",
-    district: "마포구 서교동",
-    rackCount: 18,
-    recentHourlyRentals: 35,
-  },
-  {
-    id: 4,
-    name: "뚝섬유원지",
-    district: "광진구 자양동",
-    rackCount: 16,
-    recentHourlyRentals: 20,
-  },
-  {
-    id: 5,
-    name: "반포한강공원",
-    district: "서초구 반포동",
-    rackCount: 20,
-    recentHourlyRentals: 18,
-  },
-  {
-    id: 6,
-    name: "이태원역 4번출구",
-    district: "용산구 이태원동",
-    rackCount: 14,
-    recentHourlyRentals: 12,
+    prevDaySameHourRentals: 31,
+    rolling7dSameHourAvg: 29,
   },
 ];

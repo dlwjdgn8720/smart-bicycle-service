@@ -1,17 +1,18 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Sparkles, TrendingUp, Users, X } from "lucide-react";
 import Button from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
 import publicBikeService from "../../services/publicBikeService";
 import { FORECAST_STATIONS } from "../../constants/mockData";
 import { deriveDateFeatures } from "../../utils/forecastFeatures";
+import { axiosGet } from "../../api/axios";
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, h) => h);
 const todayISODate = () => new Date().toISOString().slice(0, 10);
 
 const fieldLabel = "mb-2 block text-xs text-gray-400";
 const fieldInput =
-  "w-full rounded-lg border border-border bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-white/40";
+  "w-full rounded-lg border border-border bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-white/40 [&::-webkit-calendar-picker-indicator]:invert";
 
 const LEVEL_STYLES = {
   높음: { text: "text-danger", bar: "bg-danger", border: "border-danger/30", chip: "border-danger/30 bg-danger/10 text-danger" },
@@ -30,16 +31,16 @@ function ReadOnlyField({ label, value }) {
 
 export default function DemandForecast() {
   const [stationId, setStationId] = useState(FORECAST_STATIONS[0].id);
+  // 백엔드 API에서 불러온 대여소 상세 메타 정보 저장
+  const [stationDetail, setStationDetail] = useState(null);
   const [date, setDate] = useState(todayISODate());
   const [hour, setHour] = useState(new Date().getHours());
   const [temperature, setTemperature] = useState(20);
   const [humidity, setHumidity] = useState(50);
   const [rainfall, setRainfall] = useState(0);
   const [windSpeed, setWindSpeed] = useState(2.0);
-  const [recentHourlyRentals, setRecentHourlyRentals] = useState(FORECAST_STATIONS[0].recentHourlyRentals);
-  const [prevDaySameHourRentals, setPrevDaySameHourRentals] = useState(
-    Math.round(FORECAST_STATIONS[0].recentHourlyRentals * 1.1),
-  );
+
+  // lag_1h, lag_24h 제거 후 평균 패턴 피처만 유지
   const [rolling7dSameHourAvg, setRolling7dSameHourAvg] = useState(
     Math.round(FORECAST_STATIONS[0].recentHourlyRentals * 1.05),
   );
@@ -48,19 +49,62 @@ export default function DemandForecast() {
   const [result, setResult] = useState(null);
   const [resultOpen, setResultOpen] = useState(true);
   const [pendingRequest, setPendingRequest] = useState(null); // 백엔드 미연동 시 확인용 요청 payload
+  const [stationInfo, setStationInfo] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const station = FORECAST_STATIONS.find((s) => s.id === stationId);
+  const mockStation = FORECAST_STATIONS.find((s) => s.id === stationId);
   const dateFeatures = useMemo(() => deriveDateFeatures(date), [date]);
 
-  const handleStationChange = (e) => {
-    const next = FORECAST_STATIONS.find((s) => s.id === Number(e.target.value));
-    setStationId(next.id);
-    setRecentHourlyRentals(next.recentHourlyRentals);
-    setPrevDaySameHourRentals(Math.round(next.recentHourlyRentals * 1.1));
-    setRolling7dSameHourAvg(Math.round(next.recentHourlyRentals * 1.05));
+  // =========================================================================
+  // 대여소 변경 및 진입 시 FastAPI 백엔드 API (/api/stations/{station_id}) 연동
+  // =========================================================================
+  useEffect(() => {
+    const fetchStationInfo = async () => {
+      try {
+        const stationInfoRes = await axiosGet('/stations_info');
+        console.log(stationInfoRes);
+
+        if (stationInfoRes && stationInfoRes.stations) {
+          const stationArray = Object.entries(stationInfoRes.stations).map(([id, name]) => ({
+            id: Number(id), // key값 (숫자로 변환)
+            name: name      // value값
+          })).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+
+          setStationInfo(stationArray);
+        }
+
+        // FastAPI /api/stations/{station_id} 호출
+        const data = await axiosGet(`/stations/${stationId}`);
+        console.log('data:::', data);
+
+        setStationDetail(data);
+        // API 응답 데이터로 과거 이용 패턴 자동 매핑
+        setRolling7dSameHourAvg(data.rolling_7d_same_hour_avg ?? 0);
+      } catch (err) {
+        console.warn("대여소 정보 백엔드 조회 실패, Fallback 데이터 사용:", err);
+
+        // API 조회 실패 시 mockData 또는 기본값 fallback
+        const fallbackStation = FORECAST_STATIONS.find((s) => s.id === stationId);
+        if (fallbackStation) {
+          setStationDetail({
+            station_id: fallbackStation.id,
+            district: fallbackStation.district,
+            rack_count: fallbackStation.rackCount,
+            rolling_7d_same_hour_avg: Math.round((fallbackStation.recentHourlyRentals ?? 0) * 1.05),
+          });
+          setRolling7dSameHourAvg(Math.round((fallbackStation.recentHourlyRentals ?? 0) * 1.05));
+        }
+      }
+    };
+
+    // 결과 상태 초기화 및 대여소 상세 데이터 로드
     setResult(null);
     setPendingRequest(null);
+    fetchStationInfo();
+  }, [stationId]);
+
+  const handleStationChange = (e) => {
+    setStationId(Number(e.target.value));
   };
 
   const handleRun = async () => {
@@ -73,8 +117,6 @@ export default function DemandForecast() {
       humidity,
       rainfall,
       windSpeed,
-      recentHourlyRentals,
-      prevDaySameHourRentals,
       rolling7dSameHourAvg,
     };
 
@@ -94,9 +136,16 @@ export default function DemandForecast() {
     }
   };
 
+  // 대여소 이름 (mockData에서 가져오거나 fallback)
+  const currentStationName = mockStation ? mockStation.name : `${stationId}번 대여소`;
+  // 대여소 정원 수 (API 메타데이터 우선 적용)
+  const currentRackCount = stationDetail?.rack_count ?? mockStation?.rackCount ?? 15;
+  // 자치구/지역 (API 메타데이터 우선 적용)
+  const currentDistrict = stationDetail?.district ?? mockStation?.district ?? "-";
+
   const levelStyle = LEVEL_STYLES[result?.demand_level] ?? LEVEL_STYLES.보통;
   const availableForBar = result?.available_bikes ?? result?.predicted_demand ?? 0;
-  const barPct = station ? Math.min(100, Math.round((availableForBar / station.rackCount) * 100)) : 0;
+  const barPct = currentRackCount ? Math.min(100, Math.round((availableForBar / currentRackCount) * 100)) : 0;
 
   return (
     <div>
@@ -146,7 +195,7 @@ export default function DemandForecast() {
                     <span className="ml-1 text-lg font-semibold text-gray-400">건</span>
                   </p>
                   <p className="mt-2 text-xs text-gray-500">
-                    {station.name} · {date} {String(hour).padStart(2, "0")}:00
+                    {currentStationName} · {date} {String(hour).padStart(2, "0")}:00
                   </p>
                 </div>
                 <div className="rounded-lg border border-border bg-black/20 p-5">
@@ -159,7 +208,7 @@ export default function DemandForecast() {
                     <span className="ml-1 text-lg font-semibold text-gray-400">%</span>
                   </p>
                   <p className="mb-2 mt-2 text-right text-xs text-gray-500">
-                    {result.demand_level} · {availableForBar}/{station.rackCount}대
+                    {result.demand_level} · {availableForBar}/{currentRackCount}대
                   </p>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
                     <div className={`h-full rounded-full ${levelStyle.bar}`} style={{ width: `${barPct}%` }} />
@@ -197,15 +246,23 @@ export default function DemandForecast() {
         {/* A. 대여소 */}
         <label className={fieldLabel}>대여소</label>
         <select value={stationId} onChange={handleStationChange} className={`${fieldInput} mb-3`}>
-          {FORECAST_STATIONS.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
+          {stationInfo.length > 0 ? (
+            stationInfo.map((station) => (
+              <option key={station.id} value={station.id}>
+                {station.name}
+              </option>
+            ))
+          ) : (
+            FORECAST_STATIONS.map((station) => (
+              <option key={station.id} value={station.id}>
+                {station.name}
+              </option>
+            ))
+          )}
         </select>
         <div className="mb-6 grid grid-cols-2 gap-3">
-          <ReadOnlyField label="지역" value={station.district} />
-          <ReadOnlyField label="대여소 정원" value={`${station.rackCount}대`} />
+          <ReadOnlyField label="지역" value={currentDistrict} />
+          <ReadOnlyField label="대여소 정원" value={`${currentRackCount}대`} />
         </div>
 
         {/* B. 예측 시점 */}
@@ -280,8 +337,9 @@ export default function DemandForecast() {
             <label className={fieldLabel}>최근 1시간 대여량</label>
             <input
               type="number"
-              value={recentHourlyRentals}
-              onChange={(e) => setRecentHourlyRentals(Number(e.target.value))}
+              disabled='True'
+              // value={recentHourlyRentals}
+              // onChange={(e) => setRecentHourlyRentals(Number(e.target.value))}
               className={fieldInput}
             />
           </div>
@@ -289,8 +347,9 @@ export default function DemandForecast() {
             <label className={fieldLabel}>전일 동일 시간대 대여량</label>
             <input
               type="number"
-              value={prevDaySameHourRentals}
-              onChange={(e) => setPrevDaySameHourRentals(Number(e.target.value))}
+              disabled='True'
+              // value={prevDaySameHourRentals}
+              // onChange={(e) => setPrevDaySameHourRentals(Number(e.target.value))}
               className={fieldInput}
             />
           </div>
@@ -310,8 +369,8 @@ export default function DemandForecast() {
           <p className="mb-3 text-sm font-semibold text-white">예측에 사용되는 데이터</p>
           <dl className="space-y-2 text-sm">
             {[
-              ["대여소", station.name],
-              ["지역", station.district],
+              ["대여소", currentStationName],
+              ["지역", currentDistrict],
               ["날짜", date],
               ["시간", `${String(hour).padStart(2, "0")}:00`],
               ["요일", dateFeatures?.dayOfWeekLabel ?? "-"],
@@ -320,9 +379,7 @@ export default function DemandForecast() {
               ["습도", `${humidity}%`],
               ["강수량", `${rainfall}mm`],
               ["풍속", `${windSpeed}m/s`],
-              ["최근 1시간 대여량", `${recentHourlyRentals}건`],
-              ["전일 동일 시간대 대여량", `${prevDaySameHourRentals}건`],
-              ["최근 7일 동일 시간대 평균", `${rolling7dSameHourAvg}건`],
+              ["시간대별 평균 대여량", `${rolling7dSameHourAvg}건`],
             ].map(([k, v]) => (
               <div key={k} className="flex items-center justify-between">
                 <dt className="text-gray-400">{k}</dt>
