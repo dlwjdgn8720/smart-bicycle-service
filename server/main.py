@@ -6,8 +6,13 @@ import numpy as np
 import pandas as pd
 import lightgbm as lgb
 import holidays
+import httpx
+import math
+import asyncio
+import json
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from database.connection import Base, engine
@@ -15,12 +20,38 @@ from routes.member import member_router
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-
+# 실시간 따릉이 대여정보 api키
+SEOUL_API_KEY = os.getenv("SEOUL_API_KEY", "seoul-api-key-default")
 
 # DB 테이블 생성
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+# 전역 캐시 변수 (CSV에서 추출한 통계 값)
+STAT_CACHE = {
+    "avg_use_time": 24,  # 기본 평균 이용시간 (분)
+    "hourly_ratio": [],  # CSV 기반 24시간 누적 대여 비율
+    "weekday_hourly":[],
+    "weekend_hourly":[]
+}
+
+def load_precalculated_statistics():
+    """미리 연산된 경량 JSON 통계 파일 로드 (0.001초 소요)"""
+    global STAT_CACHE
+    try:
+        with open("data/bike_stats_2025.json", "r", encoding="utf-8") as f:
+            STAT_CACHE = json.load(f)
+        print("✅ 경량 통계 파일 로드 완료")
+    except Exception as e:
+        print(f"⚠️ 통계 파일 로드 실패 (기본값 사용): {e}")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 서버 기동 시 딜레이 없이 즉시 로드
+    load_precalculated_statistics()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 # CORS 설정
 origins = os.getenv("FRONT_ORIGINS", "http://localhost:5173")
@@ -149,37 +180,6 @@ def get_top_stations():
 
 @app.get("/api/stations_info")
 def get_stations_info():
-    # STATION_METADATA2 = joblib.load("models/station_metadata.pkl")
-
-    # # 2. 최댓값 및 대여소 매핑 정보 탐색
-    # max_info = {
-    #     "station_id": None,
-    #     "station_name": None,
-    #     "time_key": None,  # 예: "0_18" (월요일 18시)
-    #     "max_val": -1.0,
-    # }
-
-    # for s_id, s_info in STATION_METADATA2.items():
-    #     if not isinstance(s_info, dict):
-    #         continue
-
-    #     station_name = s_info.get("대여소명", "알 수 없음")
-    #     hour_means = s_info.get("station_hour_mean", {})
-
-    #     if isinstance(hour_means, dict):
-    #         for t_key, val in hour_means.items():
-    #             if val is not None and float(val) > max_info["max_val"]:
-    #                 max_info["max_val"] = float(val)
-    #                 max_info["station_id"] = s_id
-    #                 max_info["station_name"] = station_name
-    #                 max_info["time_key"] = t_key
-
-    # print("🔥 [최고 평균 대여량 대여소 정보]")
-    # print(f"- 대여소 ID   : {max_info['station_id']}")
-    # print(f"- 대여소명     : {max_info['station_name']}")
-    # print(f"- 시간대 키   : {max_info['time_key']}")
-    # print(f"- 최고 평균값 : {max_info['max_val']:.2f}건")
-
     station_names = {
     station_id: info['대여소명'] 
     for station_id, info in STATION_METADATA.items()
@@ -217,25 +217,6 @@ class ForecastRequest(BaseModel):
     rainfall: float = Field(..., description="강수량(mm)")
     wind_speed: float = Field(..., description="풍속(m/s)")
     rolling_7d_same_hour_avg: float = Field(..., description="시간대별 평균 대여량 (station_hour_mean)")
-
-
-# DISTRICT_MAP = {
-#     "강남구": 1, "강동구": 2, "강북구": 3, "강서구": 4, "관악구": 5,
-#     "광진구": 6, "구로구": 7, "금천구": 8, "노원구": 9, "도봉구": 10,
-#     "동대문구": 11, "동작구": 12, "마포구": 13, "서대문구": 14, "서초구": 15,
-#     "성동구": 16, "성북구": 17, "송파구": 18, "양천구": 19, "영등포구": 20,
-#     "용산구": 21, "은평구": 22, "종로구": 23, "중구": 24, "중랑구": 25
-# }
-
-# def get_district_code(district_val) -> int:
-#     if isinstance(district_val, int):
-#         return district_val
-#     if isinstance(district_val, str):
-#         if district_val.isdigit():
-#             return int(district_val)
-#         return DISTRICT_MAP.get(district_val, 1)
-#     return 1
-
 
 @app.post("/api/ai/bike/forecast")
 def predict_bike_demand(data: ForecastRequest):
@@ -390,3 +371,189 @@ def get_special_day_features(date_str: str):
     is_day_before_holiday = 1 if (is_weekday and (next_is_weekend or next_is_pub)) else 0
     
     return is_public_holiday, is_major_holiday, is_day_before_holiday
+
+
+def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """두 위경도 간의 하버사인(Haversine) 직선 거리 계산 (단위: km)"""
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(math.radians(lat1))
+        * math.cos(math.radians(lat2))
+        * math.sin(dlon / 2) ** 2
+    )
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def format_distance(dist_km: float) -> str:
+    """거리를 m 또는 km 단위 문자열로 변환 (예: 120m, 1.2km)"""
+    if dist_km < 1.0:
+        return f"{int(dist_km * 1000)}m"
+    return f"{dist_km:.1f}km"
+
+
+def get_station_status(available: int) -> str:
+    """자전거 잔여 대수에 따른 상태값 반환 (GOOD / LOW / EMPTY)"""
+    if available == 0:
+        return "EMPTY"
+    elif available <= 3:
+        return "LOW"
+    return "GOOD"
+
+async def fetch_bike_range(client: httpx.AsyncClient, start: int, end: int) -> list:
+    """단일 구간 데이터를 호출하는 비동기 함수"""
+    url = f"http://openapi.seoul.go.kr:8088/{SEOUL_API_KEY}/json/bikeList/{start}/{end}/"
+    try:
+        response = await client.get(url, timeout=5.0)
+        res_data = response.json()
+        return res_data.get("rentBikeStatus", {}).get("row", [])
+    except Exception as e:
+        print(f"API 호출 오류 ({start}~{end}): {e}")
+        return []
+
+def get_actual_hourly_usage() -> list:
+    """JSON 통계 데이터에서 오늘(평일/주말)에 해당하는 시간대별 실제 평균 대여량 추출"""
+    is_weekend = datetime.now().weekday() >= 5
+    key = "weekend_hourly" if is_weekend else "weekday_hourly"
+
+    # JSON에서 읽어온 실제 시간대별 평균 배열
+    counts = STAT_CACHE.get(
+        key, [0] * 24
+    )  # JSON 로드 실패 시 기본값 0 처리
+
+    return [{"hour": f"{h:02d}시", "count": counts[h]} for h in range(24)]
+
+
+@app.get("/api/bike/seoul/stations")
+async def get_nearby_stations(request: Request):
+#     lat: float = Query(37.4979, description="기준 위도 (기본: 강남역)"),
+#     lng: float = Query(127.0276, description="기준 경도 (기본: 강남역)"),
+#     limit: int = 6,
+# ):
+
+    # 모든 쿼리 파라미터를 딕셔너리로 변환
+    params = dict(request.query_params)
+
+    # 기본값 설정 및 타입 변환 처리
+    lat = float(params.get("lat", 37.4979))
+    lng = float(params.get("lng", 127.0276))
+    limit = int(params.get("limit", 6))
+
+
+    # 1000개 단위로 3회 나누어 요청하는 범위 지정 (총 3,000개)
+    ranges = [(1, 1000), (1001, 2000), (2001, 3000)]
+
+    async with httpx.AsyncClient() as client:
+        # 3개 구간의 HTTP 요청을 동시(병렬) 수행
+        tasks = [fetch_bike_range(client, start, end) for start, end in ranges]
+        results = await asyncio.gather(*tasks)
+
+    # 병렬 호출 결과 리스트 하나로 합치기
+    raw_stations = []
+    for station_list in results:
+        raw_stations.extend(station_list)
+
+    parsed_stations = []
+    for item in raw_stations:
+        # 좌표 데이터 누락 방어 코드
+        if not item.get("stationLatitude") or not item.get("stationLongitude"):
+            continue
+
+        st_lat = float(item["stationLatitude"])
+        st_lng = float(item["stationLongitude"])
+
+        dist_km = calculate_distance(lat, lng, st_lat, st_lng)
+        available = int(item["parkingBikeTotCnt"])
+        total = int(item["rackTotCnt"])
+
+        raw_name = item["stationName"]
+        clean_name = (
+            raw_name.split(".", 1)[-1].strip() if "." in raw_name else raw_name
+        )
+
+        parsed_stations.append(
+            {
+                "id": item["stationId"],
+                "name": clean_name,
+                "distance": format_distance(dist_km),
+                "available": available,
+                "total": total,
+                "status": get_station_status(available),
+                "_sort_dist": dist_km,
+            }
+        )
+
+    # 가장 가까운 대여소 순 정렬
+    parsed_stations.sort(key=lambda x: x["_sort_dist"])
+
+    # 정렬 임시 필드 제거 및 상위 N개 추출
+    result_stations = []
+    for st in parsed_stations[:limit]:
+        st.pop("_sort_dist", None)
+        result_stations.append(st)
+
+    # 1년치 데이터 분석으로 완성된 시간대별 실제 이용량
+    hourly_usage = get_actual_hourly_usage()       
+
+    return {"stations": result_stations, "hourlyUsage": hourly_usage}
+
+# 실시간 자전거 api 연동
+async def fetch_bike_stations(client: httpx.AsyncClient) -> list:
+    """실시간 전체 대여소 수집 (3,000개)"""
+    ranges = [(1, 1000), (1001, 2000), (2001, 3000)]
+    tasks = [
+        client.get(
+            f"http://openapi.seoul.go.kr:8088/{SEOUL_API_KEY}/json/bikeList/{s}/{e}/"
+        )
+        for s, e in ranges
+    ]
+    responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+    stations = []
+    for res in responses:
+        if isinstance(res, httpx.Response) and res.status_code == 200:
+            data = res.json()
+            stations.extend(data.get("rentBikeStatus", {}).get("row", []))
+    return stations
+
+
+@app.get("/api/bike/summary")
+async def get_dashboard_summary():
+    async with httpx.AsyncClient() as client:
+        raw_stations = await fetch_bike_stations(client)
+
+    # 1. 운영 대여소 수
+    operating_stations = len(raw_stations)
+
+    # 2. 현재 이용중 건수 = (전체 거치대 총합) - (현재 대여 가능 자전거 총합)
+    total_racks = sum(int(st.get("rackTotCnt", 0)) for st in raw_stations)
+    total_available = sum(
+        int(st.get("parkingBikeTotCnt", 0)) for st in raw_stations
+    )
+    currently_active = max(0, total_racks - total_available)
+
+    # 3. 평균 이용시간 (CSV 기반)
+    avg_use_time = STAT_CACHE["avg_use_time"]
+
+    # 4. 오늘 총 이용건수 (추정치)
+    # 현재 이용중인 대수와 CSV 기반 시간대별 누적 비율을 조합하여 역산
+    current_hour = datetime.now().hour
+    cum_ratio = STAT_CACHE["hourly_ratio"][current_hour]
+
+    # 현재 이용 중인 자전거 수 기반 예상 오늘 총 대여량 역산
+    estimated_today_total = (
+        round((currently_active * 3) / max(0.01, cum_ratio))
+        if cum_ratio > 0
+        else 0
+    )
+
+    return {
+        "operatingStations": operating_stations,  # 운영 대여소 수 (개)
+        "currentlyActive": currently_active,  # 현재 이용중 (대)
+        "avgUseTime": avg_use_time,  # 평균 이용시간 (분)
+        "estimatedTodayTotal": estimated_today_total,  # 오늘 총 이용건수 예상 (건)
+    }
+
+

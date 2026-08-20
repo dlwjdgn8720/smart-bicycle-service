@@ -4,6 +4,7 @@ import PublicHeader from "../components/layout/PublicHeader";
 import StatCard from "../components/cards/StatCard";
 import publicBikeService from "../services/publicBikeService";
 import { ROUTES } from "../constants/routes";
+import { axiosGet } from "../api/axios";
 
 const TABS = [
   { label: "따릉이 루트", to: ROUTES.BIKE_SEOUL, end: true },
@@ -18,7 +19,45 @@ export default function BikeLayout() {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    publicBikeService.getSummary().then(setStats);
+    const summaryStations = async () => {
+      try {
+        const response = await axiosGet("/bike/summary")
+
+        // 백엔드 객체 응답 데이터를 StatCard 배열 구조로 매핑
+        const formattedStats = [
+          {
+            label: "오늘 총 이용",
+            value: response.estimatedTodayTotal?.toLocaleString() || "0",
+            unit: "건",
+            trend: "+8.4%",
+          },
+          {
+            label: "운영 대여소",
+            value: response.operatingStations?.toLocaleString() || "0",
+            unit: "개소",
+            trend: "+2.1%",
+          },
+          {
+            label: "현재 이용 중",
+            value: response.currentlyActive?.toLocaleString() || "0",
+            unit: "대",
+            trend: "+12.3%",
+          },
+          {
+            label: "평균 이용 시간",
+            value: String(response.avgUseTime || 0),
+            unit: "분",
+            trend: "-1.8%",
+          },
+        ];
+
+        setStats(formattedStats);
+      } catch (error) {
+        console.error("Bike Layout API 요청 실패:", error);
+      }
+    };
+    summaryStations()
+    //publicBikeService.getSummary().then(setStats);
   }, []);
 
   return (
@@ -40,7 +79,7 @@ export default function BikeLayout() {
             <span className="h-1.5 w-1.5 rounded-full bg-bike" />
             실시간 · 서울시 공공자전거
           </span>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-white-700">
             업데이트: {new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
           </span>
         </div>

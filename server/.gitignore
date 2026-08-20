@@ -11,3 +11,5 @@ __pycache__/
 *.xlsx
 *.pkl
 .ipynb_checkpoints/
+*.json
+*.parquet

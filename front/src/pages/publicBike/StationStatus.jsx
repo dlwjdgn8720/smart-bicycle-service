@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import StationCard from "../../components/cards/StationCard";
 import AreaChartCard from "../../components/charts/AreaChartCard";
 import Loading from "../../components/common/Loading";
-import publicBikeService from "../../services/publicBikeService";
+import { axiosGet } from "../../api/axios";
 
 const LEGEND = [
   { label: "충분", color: "bg-neon" },
@@ -10,11 +10,45 @@ const LEGEND = [
   { label: "없음", color: "bg-danger" },
 ];
 
+// 기본 위치값 (강남역 위도/경도)
+const GANGNAM_LAT = 37.4979;
+const GANGNAM_LNG = 127.0276;
+
 export default function StationStatus() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    publicBikeService.getStations().then(setData);
+    // API 요청 함수
+    const fetchStations = async (lat, lng) => {
+      try {
+        const response = await axiosGet("/bike/seoul/stations", {
+          params: { lat, lng },
+        });
+        setData(response);
+      } catch (error) {
+        console.error("따릉이 API 요청 실패:", error);
+      }
+    };
+
+    // 위치 정보(Geolocation) 수집 및 Fallback 처리
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // 1. 사용자 위치 권한 승인 시 실시간 좌표 수집
+          const { latitude, longitude } = position.coords;
+          fetchStations(latitude, longitude);
+        },
+        (error) => {
+          // 2. 권한 거부 / 타임아웃 / 오류 발생 시 기본값(강남역)으로 처리
+          console.warn("위치 접근 실패, 기본 위치(강남역) 좌표를 사용합니다.", error);
+          fetchStations(GANGNAM_LAT, GANGNAM_LNG);
+        },
+        { timeout: 5000, enableHighAccuracy: true } // 5초 대기 후 타임아웃 처리
+      );
+    } else {
+      // 3. 브라우저가 Geolocation을 지원하지 않는 경우
+      fetchStations(GANGNAM_LAT, GANGNAM_LNG);
+    }
   }, []);
 
   if (!data) return <Loading />;
