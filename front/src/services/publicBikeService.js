@@ -74,7 +74,7 @@ async function getForecast({
   rolling7dSameHourAvg,
 }) {
   try {
-    const { data } = await api.post("/ai/bike/forecast", {
+    const { data } = await api.post("/forecast", {
       station_id: stationId,
       date,
       hour,

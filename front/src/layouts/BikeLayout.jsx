@@ -23,6 +23,9 @@ export default function BikeLayout() {
       try {
         const response = await axiosGet("/bike/summary")
 
+        console.log(response);
+
+
         // 백엔드 객체 응답 데이터를 StatCard 배열 구조로 매핑
         const formattedStats = [
           {

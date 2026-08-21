@@ -1,0 +1,29 @@
+# version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./server
+    container_name: smart-bicycle-service-api
+    env_file:
+      - ./server/.env  # 실행 시점에 환경변수 안전 주입
+    ports:
+      - "8000:8000"
+    volumes:
+      # 운영 환경 권장: 소스 코드는 이미지 내부 실행, 대용량 파일 폴더만 호스트와 연결
+      - ./server/models:/app/models
+      - ./server/data:/app/data
+    # ✅ 추가: 컨테이너 내부에서 로컬 컴퓨터(Windows/Mac)의 DB에 접속하기 위한 통로 개방
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+
+  frontend:
+    build:
+      context: ./front
+    container_name: smart-bicycle-service-react
+    ports:
+      - "5173:80"  # 외부 5173 포트로 접속하면 내부의 Nginx 80 포트로 연결
+    depends_on:
+      - backend
+    restart: always
